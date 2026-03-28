@@ -1,4 +1,4 @@
-# 媒体播放器 (MediaPlayer)
+# Windy媒体播放器 (WindyQtMediaPlayer)
 
 基于 **Qt6 Multimedia** 的高性能本地/网络媒体播放器，界面风格参考 QQ 影音。
 
