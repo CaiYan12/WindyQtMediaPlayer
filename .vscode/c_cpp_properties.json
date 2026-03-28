@@ -1,0 +1,39 @@
+{
+  "configurations": [
+    {
+      "name": "Win32",
+      "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/bin/HostX64/x64/cl.exe",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/Qt/6.10.0/msvc2022_64/include",
+        "C:/Qt/6.10.0/msvc2022_64/include/QtCore",
+        "C:/Qt/6.10.0/msvc2022_64/include/QtGui",
+        "C:/Qt/6.10.0/msvc2022_64/include/QtWidgets",
+        "C:/Qt/6.10.0/msvc2022_64/include/QtMultimedia",
+        "C:/Qt/6.10.0/msvc2022_64/include/QtMultimediaWidgets",
+        "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/include",
+        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt",
+        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared",
+        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/winrt",
+        "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um"
+      ],
+      "cppStandard": "c++17",
+      "cStandard": "c11",
+      "defines": [
+        "WIN32",
+        "_WINDOWS",
+        "QT_MULTIMEDIA_LIB",
+        "QT_WIDGETS_LIB",
+        "QT_GUI_LIB",
+        "QT_CORE_LIB",
+        "_UNICODE",
+        "UNICODE",
+        "NDEBUG"
+      ],
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      "configurationProvider": "ms-vscode.cmake-tools",
+      "intelliSenseMode": "windows-msvc-x64"
+    }
+  ],
+  "version": 4
+}

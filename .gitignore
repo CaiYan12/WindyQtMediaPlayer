@@ -1,0 +1,46 @@
+# Build output
+build/
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.obj
+*.o
+*.a
+*.lib
+*.exp
+
+# Qt build artifacts
+.moc/
+qmake/
+obj/
+Makefile*
+*.mak
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.suo
+*.user
+*.opensdf
+*.sdf
+
+# Qt Creator
+*.autosave
+CMakeLists.txt.user*
+
+# Compiled files
+*.moc.cpp
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# Plugins and assets (keep resources.qrc but not compiled output)
+plugins/
+*.qm
+translations/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

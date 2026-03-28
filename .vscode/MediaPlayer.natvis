@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!-- QString -->
+  <Type Name="QString">
+    <DisplayString Condition="d == nullptr">null</DisplayString>
+    <DisplayString>{d ? d->data : nullptr,na}</DisplayString>
+    <StringView>d->data</StringView>
+    <Expand>
+      <Item Name="Size">d ? d->size : 0</Item>
+      <Item Name="Capacity">d ? d->alloc : 0</Item>
+      <Item Name="Data">d ? d->data : nullptr,s8</Item>
+    </Expand>
+  </Type>
+
+  <!-- QByteArray -->
+  <Type Name="QByteArray">
+    <DisplayString>{d ? d->data : nullptr,s8}</DisplayString>
+    <Expand>
+      <Item Name="Size">d ? d->size : 0</Item>
+      <Item Name="Data">d ? d->data : nullptr,s8</Item>
+    </Expand>
+  </Type>
+
+  <!-- QUrl -->
+  <Type Name="QUrl">
+    <DisplayString>{d->scheme,na}://{d->host,na}/{d->path,na}</DisplayString>
+    <Expand>
+      <Item Name="Scheme">d->scheme</Item>
+      <Item Name="Host">d->host</Item>
+      <Item Name="Path">d->path</Item>
+      <Item Name="Query">d->query</Item>
+    </Expand>
+  </Type>
+
+  <!-- QList&lt;T&gt; -->
+  <Type Name="QList&lt;*&gt;">
+    <DisplayString>[{n}] size={n}</DisplayString>
+    <Expand>
+      <Item Name="Size">n</Item>
+      <ArrayItems>
+        <Size>n</Size>
+        <ValuePointer>p[0].val</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- QMap / QHash -->
+  <Type Name="QMap&lt;*&gt;">
+    <DisplayString>{n} items</DisplayString>
+    <Expand>
+      <Item Name="Size">n</Item>
+    </Expand>
+  </Type>
+
+  <!-- QPixmap -->
+  <Type Name="QPixmap">
+    <DisplayString>{wd},{ht} pixels</DisplayString>
+    <Expand>
+      <Item Name="Width">wd</Item>
+      <Item Name="Height">ht</Item>
+      <Item Name="isNull">this-&gt;isNull()</Item>
+    </Expand>
+  </Type>
+
+  <!-- QImage -->
+  <Type Name="QImage">
+    <DisplayString>{w}x{h} format={d}</DisplayString>
+    <Expand>
+      <Item Name="Width">w</Item>
+      <Item Name="Height">h</Item>
+      <Item Name="Format">d</Item>
+    </Expand>
+  </Type>
+
+  <!-- QSize -->
+  <Type Name="QSize">
+    <DisplayString>{wd}x{ht}</DisplayString>
+  </Type>
+
+  <!-- QPoint -->
+  <Type Name="QPoint">
+    <DisplayString>({xp},{yp})</DisplayString>
+  </Type>
+
+  <!-- QRect -->
+  <Type Name="QRect">
+    <DisplayString>({x1},{y1}) {x2-x1+1}x{y2-y1+1}</DisplayString>
+  </Type>
+
+  <!-- QVariant -->
+  <Type Name="QVariant">
+    <DisplayString Condition="d-&gt;type == QMetaType::UnknownType">null</DisplayString>
+    <DisplayString Condition="d-&gt;type == QMetaType::QString">{d-&gt;data.ui &amp;&amp; ((QString*)d-&gt;data.ui)-&gt;size() != 0 ? *((QString*)d-&gt;data.ui) : ""}</DisplayString>
+    <DisplayString Condition="d-&gt;type == QMetaType::Int">{d-&gt;data.i}</DisplayString>
+    <DisplayString Condition="d-&gt;type == QMetaType::LongLong">{d-&gt;data_ll}</DisplayString>
+    <DisplayString Condition="d-&gt;type == QMetaType::Bool">{d-&gt;data.b}</DisplayString>
+  </Type>
+
+  <!-- std::vector -->
+  <Type Name="std::vector&lt;*&gt;">
+    <DisplayString>[{_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst}] size={_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst}</DisplayString>
+    <Expand>
+      <Item Name="Size">_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst</Item>
+      <ArrayItems>
+        <Size>_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst</Size>
+        <ValuePointer>_Mypair._Myval2._Myfirst</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

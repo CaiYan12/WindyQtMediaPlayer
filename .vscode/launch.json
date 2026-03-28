@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Qt MSVC Debug",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/MediaPlayer.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/build/Debug",
+      "environment": [
+        {
+          "name": "QT_PLUGIN_PATH",
+          "value": "C:/Qt/6.10.0/msvc2022_64/plugins"
+        },
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "windows"
+        }
+      ],
+      "visualizerFile": "${workspaceFolder}/.vscode/MediaPlayer.natvis",
+      "symbolSearchPath": "C:/Qt/6.10.0/msvc2022_64/lib",
+      "sourceFileMap": {
+        "C:/Qt/6.10.0/Src": "C:/Qt/6.10.0/Src"
+      }
+    },
+    {
+      "name": "Qt MSVC Release",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Release/MediaPlayer.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/build/Release",
+      "environment": [
+        {
+          "name": "QT_PLUGIN_PATH",
+          "value": "C:/Qt/6.10.0/msvc2022_64/plugins"
+        },
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "windows"
+        }
+      ]
+    }
+  ]
+}
