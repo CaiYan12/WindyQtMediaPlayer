@@ -1,41 +1,27 @@
 {
   // ========== Qt / C++ IntelliSense ==========
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-  "C_Cpp.default.compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/bin/HostX64/x64/cl.exe",
-  "C_Cpp.default.includePath": [
-    "${workspaceFolder}/**",
-    "C:/Qt/6.10.0/msvc2022_64/include",
-    "C:/Qt/6.10.0/msvc2022_64/include/QtCore",
-    "C:/Qt/6.10.0/msvc2022_64/include/QtGui",
-    "C:/Qt/6.10.0/msvc2022_64/include/QtWidgets",
-    "C:/Qt/6.10.0/msvc2022_64/include/QtMultimedia",
-    "C:/Qt/6.10.0/msvc2022_64/include/QtMultimediaWidgets",
-    "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/include",
-    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt",
-    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared",
-    "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/winrt"
-  ],
+  "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.cppStandard": "c++17",
   "C_Cpp.default.cStandard": "c11",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/**"
+  ],
 
   // ========== CMake Tools ==========
-  "cmake.configureOnOpen": true,
-  "cmake.configureSettings": {
-    "CMAKE_PREFIX_PATH": "C:/Qt/6.10.0/msvc2022_64/lib/cmake",
-    "CMAKE_MKTEST": "OFF",
-    "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY"
-  },
+  // 编译时通过 -DCMAKE_PREFIX_PATH 指定 Qt 路径（见 README）
+  "cmake.configureOnOpen": false,
+  "cmake.configureSettings": {},
 
-  // ========== 文件排除（不索引 build 目录）==========
+  // ========== 文件排除 ==========
   "files.exclude": {
     "**/build/**": true,
     "**/.cmake/**": true,
-    "**/CMakeFiles/**": true,
-    "**/.vs/**": true
+    "**/CMakeFiles/**": true
   },
 
   // ========== 格式化 ==========
-  "C_Cpp.default.formatting": "Visual Studio",
+  "C_Cpp.default.formating": "Visual Studio",
 
   // ========== 编码 ==========
   "files.encoding": "utf8",
@@ -44,9 +30,6 @@
     "*.cpp": "cpp",
     "*.ui": "xml"
   },
-
-  // ========== Qt Designer ==========
-  "qtcreator.qt-designer.formlayout": "grid",
 
   // ========== 终端 ==========
   "terminal.integrated.defaultProfile.windows": "PowerShell",

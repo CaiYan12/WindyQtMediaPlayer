@@ -9,51 +9,91 @@
 | 音频 | MP3, WAV, FLAC, AAC, OGG, M4A |
 | 视频 | MP4, MKV, AVI, WMV, WebM |
 
+## 环境要求
+
+- **Qt 6.x**（任意版本，建议 6.8+）
+- **CMake 3.20+**
+- **Ninja** 或 **Make**
+- **支持 C++17 的编译器**（MSVC / GCC / Clang 均可）
+
+> ⚠️ 不需要 Qt Creator，不依赖任何 IDE。
+
 ## 项目结构
 
 ```
 MediaPlayer/
-├── CMakeLists.txt           # CMake 构建配置
-├── build-ps.ps1             # 构建脚本（Ctrl+Shift+B）
-├── main.cpp                 # 程序入口
-├── core/                    # 核心业务层
-│   ├── MediaEngine.h/cpp    # 媒体播放引擎（QMediaPlayer 封装）
-│   ├── PlaylistManager.h/cpp # 播放列表管理
-│   └── EqualizerManager.h/cpp # 均衡器
-├── ui/                      # UI 层
-│   ├── MainWindow.h/cpp/.ui # 主窗口
-│   ├── ControlBar.h/cpp     # 底部播放控制栏
-│   ├── PlaylistWidget.h/cpp  # 播放列表面板
-│   ├── VideoWidget.h/cpp    # 视频显示窗口
-│   └── SpectrumWidget.h/cpp  # 音频频谱显示
+├── CMakeLists.txt       # CMake 构建配置（无硬编码路径）
+├── build-ps.ps1        # Windows 构建脚本（含 MSVC 环境检测）
+├── main.cpp            # 程序入口
+├── core/               # 核心业务层（无 UI 依赖）
+│   ├── MediaEngine     # QMediaPlayer 封装
+│   ├── PlaylistManager # 播放列表
+│   └── EqualizerManager # 均衡器
+├── ui/                 # UI 层
+│   ├── MainWindow      # 主窗口
+│   ├── ControlBar      # 底部控制栏
+│   ├── PlaylistWidget  # 播放列表面板
+│   ├── VideoWidget     # 视频显示
+│   └── SpectrumWidget  # 音频频谱
 └── res/
-    └── resources.qrc        # Qt 资源
+    └── resources.qrc   # Qt 资源
 ```
 
-## 快速开始
+## 构建步骤
 
-### 构建
+### Windows + MSVC + VS Code
 
 ```bash
-# 在 VS Code 中
-Ctrl+Shift+B   # 编译 + 自动部署 Qt DLL
-```
+# 1. 用 PowerShell 运行构建脚本（自动检测 MSVC + Qt）
+pwsh -File build-ps.ps1
 
-或手动：
-
-```powershell
-pwsh -File build-ps.ps1        # Debug 构建
-pwsh -File build-ps.ps1 full   # 清理 + 重构建
-pwsh -File build-ps.ps1 run    # 运行
-```
-
-### 运行
-
-```
+# 2. 编译后运行
 pwsh -File build-ps.ps1 run
 ```
 
-可执行文件位于：`build/MediaPlayer.exe`
+`build-ps.ps1` 会自动查找本机安装的 MSVC 2022 和 Qt6，不需要手动配置路径。
+
+### Windows + MSVC + 命令行
+
+```bash
+# 配置（需指定 Qt 路径）
+cmake -S . -B build ^
+    -G "Visual Studio 17 2022" -A x64 ^
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.10.0/msvc2022_64/lib/cmake"
+
+cmake --build build --config Debug --parallel
+```
+
+### Linux / macOS + CMake
+
+```bash
+# Qt 通常安装到标准路径，find_package 自动找到
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
+
+# 如果找不到 Qt，手动指定：
+cmake -S . -B build \
+    -DCMAKE_PREFIX_PATH="$HOME/Qt/6.8.3/gcc_64/lib/cmake"
+```
+
+### Qt Creator（跨平台最简单）
+
+1. Qt Creator → 文件 → 打开文件/项目
+2. 选择 `CMakeLists.txt`
+3. Kit 自动识别，点击 **Configure Project**
+4. 运行
+
+## windeployqt（打包）
+
+Debug 构建后部署 Qt 依赖：
+
+```bash
+# Windows
+C:\Qt\6.10.0\msvc2022_64\bin\windeployqt.exe build\MediaPlayer.exe --no-translations
+
+# Linux
+$ Qt/6.8.3/gcc_64/bin/windeployqt build/MediaPlayer
+```
 
 ## 快捷键
 
@@ -66,32 +106,17 @@ pwsh -File build-ps.ps1 run
 | `Ctrl+L` | 显示/隐藏播放列表 |
 | `Ctrl+M` | 迷你模式 |
 | `Ctrl+O` | 打开文件 |
-| `Ctrl+U` | 打开 URL |
 | `M` | 静音切换 |
 
-## 环境要求
+## 常见问题
 
-- Qt 6.10.0 (MSVC 2022 64-bit)
-- Visual Studio 2022 Community
-- CMake 3.20+
-- Ninja Build
+**Q: CMake 找不到 Qt6？**
+> 确保安装了 Qt6，并在 cmake 命令中加 `-DCMAKE_PREFIX_PATH` 指向 Qt 的 cmake 目录，例如：
+> `C:/Qt/6.10.0/msvc2022_64/lib/cmake`
 
-## 开发说明
-
-- **core/** 层不依赖任何 UI，可单独测试
-- **ui/** 层通过信号槽与 core 层通信
-- 编译后自动调用 `windeployqt` 部署 Qt 依赖到 `build/`
-- `build/` 目录已加入 `.gitignore`，无需提交
-
-## 后续扩展方向
-
-- [ ] 拖放文件到窗口打开
-- [ ] 均衡器面板（10 段 EQ）
-- [ ] 字幕加载（ASS/SRT）
-- [ ] 截图功能
-- [ ] 播放历史记录
-- [ ] 窗口尺寸记忆
+**Q: MSVC 编译报错 `rc.exe not found`？**
+> 确保安装了 "使用 C++ 的桌面开发" 工作负载，且 Windows SDK 正确安装。
 
 ---
 
-*基于 Qt6 + C++17 构建 | OpenClaw AI 助手生成*
+*基于 Qt6 + C++17 | OpenClaw AI 助手生成*
