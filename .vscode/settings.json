@@ -1,15 +1,13 @@
 {
-  // ========== Qt / C++ IntelliSense ==========
+  // ========== C++ IntelliSense ==========
+  // 注意：这里的路径供 VS Code 代码补全使用，与 CMake 构建无关
+  // CMake 构建通过 cmake-tools 自动检测编译器，不依赖这些设置
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-  "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.cppStandard": "c++17",
   "C_Cpp.default.cStandard": "c11",
-  "C_Cpp.default.includePath": [
-    "${workspaceFolder}/**"
-  ],
 
   // ========== CMake Tools ==========
-  // 编译时通过 -DCMAKE_PREFIX_PATH 指定 Qt 路径（见 README）
+  // Qt 路径在用户编译时通过 -DCMAKE_PREFIX_PATH 指定，详见 README
   "cmake.configureOnOpen": false,
   "cmake.configureSettings": {},
 
