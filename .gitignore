@@ -14,6 +14,7 @@ build-release/
 # Release packages (don't commit large binaries)
 MediaPlayer-v*-win64/
 MediaPlayer-v*.zip
+release/
 
 # Qt build artifacts
 .moc/
