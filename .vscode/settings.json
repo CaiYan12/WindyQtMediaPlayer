@@ -21,7 +21,9 @@
   // ========== CMake Tools ==========
   "cmake.configureOnOpen": true,
   "cmake.configureSettings": {
-    "CMAKE_PREFIX_PATH": "C:/Qt/6.10.0/msvc2022_64/lib/cmake"
+    "CMAKE_PREFIX_PATH": "C:/Qt/6.10.0/msvc2022_64/lib/cmake",
+    "CMAKE_MKTEST": "OFF",
+    "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY"
   },
 
   // ========== 文件排除（不索引 build 目录）==========
