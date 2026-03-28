@@ -50,8 +50,14 @@ switch ($args[0]) {
         Write-Host "[CLEAN] Done" -ForegroundColor Green
     }
     "release" {
-        Write-Host "[BUILD] Release..."
-        & $cmake --build $buildDir --config Release --parallel
+        Write-Host "[RELEASE] Clean + Configure + Build Release..."
+        Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
+        & $cmake -S $srcDir -B $buildDir -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DQt6_DIR="C:/Qt/6.10.0/msvc2022_64/lib/cmake/Qt6"
+        & $cmake --build $buildDir --parallel
+        & $windeployqt "$buildDir\MediaPlayer.exe" --release --no-translations
+        Write-Host "[RELEASE] Build complete: $buildDir\MediaPlayer.exe" -ForegroundColor Green
     }
     "run" {
         Write-Host "[RUN] Starting MediaPlayer.exe..."

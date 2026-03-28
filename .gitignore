@@ -1,5 +1,6 @@
 # Build output
 build/
+build-release/
 *.exe
 *.dll
 *.pdb
@@ -9,6 +10,10 @@ build/
 *.a
 *.lib
 *.exp
+
+# Release packages (don't commit large binaries)
+MediaPlayer-v*-win64/
+MediaPlayer-v*.zip
 
 # Qt build artifacts
 .moc/
@@ -38,6 +43,7 @@ ui_*.h
 
 # Local scripts (machine-specific)
 build-ps.ps1
+build-release.ps1
 setup-msvc.ps1
 setup-msvc.bat
 build.bat
