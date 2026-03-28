@@ -19,6 +19,7 @@ Makefile*
 
 # Visual Studio
 .vs/
+.vscode/
 *.vcxproj.user
 *.suo
 *.user
@@ -35,7 +36,13 @@ moc_*.cpp
 qrc_*.cpp
 ui_*.h
 
-# Plugins and assets (keep resources.qrc but not compiled output)
+# Local scripts (machine-specific)
+build-ps.ps1
+setup-msvc.ps1
+setup-msvc.bat
+build.bat
+
+# Plugins and assets
 plugins/
 *.qm
 translations/
@@ -44,3 +51,4 @@ translations/
 .DS_Store
 Thumbs.db
 desktop.ini
+

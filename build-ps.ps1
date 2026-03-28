@@ -20,12 +20,15 @@ if (Test-Path $vcTools) {
     $winSdkBinDir = (Get-ChildItem "$winSdkRoot\bin" -Directory | Where-Object { $_.Name -match '^10\.' } | Sort-Object Name -Descending | Select-Object -First 1).FullName
     $winSdkBin = Join-Path $winSdkBinDir "x64"
 
-    $env:PATH = "$vcBin;$winSdkBin;$env:PATH"
+    $env:PATH = "$vcBin;$winSdkBin;C:\Qt\Tools\Ninja;C:\Qt\Tools\CMake_64\bin;$env:PATH"
     $sdkInc = "C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0"
     $env:INCLUDE = "$sdkInc\shared;$sdkInc\ucrt;$sdkInc\um;$env:INCLUDE"
     $sdkLib = "C:\Program Files (x86)\Windows Kits\10\lib\10.0.22621.0"
-    $env:LIB = "$sdkLib\ucrt\x64;$sdkLib\um\x64;$env:LIB"
+    $msvcLib = Join-Path $vcTools "$vcVersion\lib\x64"
+    $env:LIB = "$msvcLib;$sdkLib\ucrt\x64;$sdkLib\um\x64;$env:LIB"
     Write-Host "[ENV] MSVC $vcVersion loaded" -ForegroundColor Green
+    # Tell CMake where Ninja is (Ninja generator needs this explicitly)
+    $env:CMAKE_MAKE_PROGRAM = "C:\Qt\Tools\Ninja\ninja.exe"
 }
 
 $cmake = "C:\Qt\Tools\CMake_64\bin\cmake.exe"
@@ -37,7 +40,9 @@ $qtPrefix = "C:/Qt/6.10.0/msvc2022_64/lib/cmake"
 switch ($args[0]) {
     "config" {
         Write-Host "[CONFIG] CMake Configure..."
-        & $cmake -S $srcDir -B $buildDir -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$qtPrefix
+        & $cmake -S $srcDir -B $buildDir -G Ninja `
+            -DCMAKE_BUILD_TYPE=Debug `
+            -DQt6_DIR="C:/Qt/6.10.0/msvc2022_64/lib/cmake/Qt6"
     }
     "clean" {
         Write-Host "[CLEAN] Removing build directory..."
@@ -55,7 +60,9 @@ switch ($args[0]) {
     "full" {
         Write-Host "[FULL] Clean + Configure + Build..."
         Remove-Item -Recurse -Force $buildDir -ErrorAction SilentlyContinue
-        & $cmake -S $srcDir -B $buildDir -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$qtPrefix
+        & $cmake -S $srcDir -B $buildDir -G Ninja `
+            -DCMAKE_BUILD_TYPE=Debug `
+            -DQt6_DIR="C:/Qt/6.10.0/msvc2022_64/lib/cmake/Qt6"
         & $cmake --build $buildDir --config Debug --parallel
     }
     default {
