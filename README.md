@@ -16,7 +16,6 @@
 - **Ninja** 或 **Make**
 - **支持 C++17 的编译器**（MSVC / GCC / Clang 均可）
 
-> ⚠️ 不需要 Qt Creator，不依赖任何 IDE。
 
 ## 项目结构
 
@@ -119,4 +118,4 @@ $ Qt/6.8.3/gcc_64/bin/windeployqt build/MediaPlayer
 
 ---
 
-*基于 Qt6 + C++17 | OpenClaw AI 助手生成*
+
