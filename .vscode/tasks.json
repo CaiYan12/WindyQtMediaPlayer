@@ -5,7 +5,7 @@
       "label": "1. CMake Configure",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\build-ps.ps1", "config"],
+      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\scripts\\build-ps.ps1", "config"],
       "problemMatcher": ["$cmake"],
       "group": { "kind": "build", "isDefault": false },
       "detail": "配置 CMake（首次运行或 CMakeLists.txt 变更后）"
@@ -14,7 +14,7 @@
       "label": "2. Build Debug",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\build-ps.ps1"],
+      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\scripts\\build-ps.ps1"],
       "problemMatcher": ["$msCompile"],
       "group": { "kind": "build", "isDefault": true },
       "detail": "编译 Debug 版本（Ctrl+Shift+B）"
@@ -23,7 +23,7 @@
       "label": "3. Build Release",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\build-ps.ps1", "release"],
+      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\scripts\\build-ps.ps1", "release"],
       "problemMatcher": ["$msCompile"],
       "group": { "kind": "build", "isDefault": false },
       "detail": "编译 Release 优化版本"
@@ -32,7 +32,7 @@
       "label": "4. Clean Build",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\build-ps.ps1", "clean"],
+      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\scripts\\build-ps.ps1", "clean"],
       "problemMatcher": [],
       "detail": "删除 build 目录（清理缓存）"
     },
@@ -40,7 +40,7 @@
       "label": "5. Full Build (Clean + Configure + Debug)",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\build-ps.ps1", "full"],
+      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\scripts\\build-ps.ps1", "full"],
       "problemMatcher": ["$msCompile", "$cmake"],
       "detail": "清理 + 配置 + 编译（最保险的重构建）"
     },
@@ -48,7 +48,7 @@
       "label": "6. Run",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\build-ps.ps1", "run"],
+      "args": ["-NoProfile", "-File", "D:\\Dev\\MediaPlayer\\scripts\\build-ps.ps1", "run"],
       "problemMatcher": [],
       "detail": "运行编译好的 MediaPlayer.exe"
     }

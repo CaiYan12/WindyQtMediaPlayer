@@ -5,10 +5,10 @@
       "name": "Qt MSVC Debug",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/Debug/MediaPlayer.exe",
+      "program": "${workspaceFolder}/build/MediaPlayer.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/build/Debug",
+      "cwd": "${workspaceFolder}/build",
       "environment": [
         {
           "name": "QT_PLUGIN_PATH",
@@ -29,10 +29,10 @@
       "name": "Qt MSVC Release",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/Release/MediaPlayer.exe",
+      "program": "${workspaceFolder}/build/MediaPlayer.exe",
       "args": [],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/build/Release",
+      "cwd": "${workspaceFolder}/build",
       "environment": [
         {
           "name": "QT_PLUGIN_PATH",
