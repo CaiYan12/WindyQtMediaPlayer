@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QSlider>
 #include <QPushButton>
+#include <QDir>
 
 class MediaEngine;
 class PlaylistManager;
@@ -81,4 +82,9 @@ private:
     QSystemTrayIcon*    m_tray = nullptr;
     QMenu*              m_speedMenu = nullptr;
     QActionGroup*       m_speedGroup = nullptr;
+    QString              m_playlistPath;
+    QAction*             m_actFullscreen = nullptr;
+    QAction*             m_actPlaylist = nullptr;
+    QAction*             m_actMiniMode = nullptr;
+    QAction*             m_actAlwaysOnTop = nullptr;
 };

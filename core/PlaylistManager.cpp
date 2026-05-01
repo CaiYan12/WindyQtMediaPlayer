@@ -1,10 +1,63 @@
 #include "PlaylistManager.h"
 #include <QTime>
 #include <QRandomGenerator>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QFile>
 
 PlaylistManager::PlaylistManager(QObject* parent)
     : QObject(parent)
 {
+}
+
+void PlaylistManager::save(const QString& path)
+{
+    QJsonArray arr;
+    for (const PlaylistItem& item : m_items) {
+        QJsonObject obj;
+        obj[QStringLiteral("url")] = item.url.toString();
+        obj[QStringLiteral("title")] = item.title;
+        obj[QStringLiteral("artist")] = item.artist;
+        obj[QStringLiteral("album")] = item.album;
+        obj[QStringLiteral("duration")] = item.duration;
+        arr.append(obj);
+    }
+    QJsonObject root;
+    root[QStringLiteral("currentIndex")] = m_currentIndex;
+    root[QStringLiteral("playbackMode")] = m_playbackMode;
+    root[QStringLiteral("items")] = arr;
+    QFile f(path);
+    if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+        f.close();
+    }
+}
+
+bool PlaylistManager::load(const QString& path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return false;
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
+    f.close();
+    if (!doc.isObject()) return false;
+    QJsonObject root = doc.object();
+    m_items.clear();
+    QJsonArray arr = root[QStringLiteral("items")].toArray();
+    for (const QJsonValue& v : arr) {
+        QJsonObject obj = v.toObject();
+        PlaylistItem item;
+        item.url = QUrl(obj[QStringLiteral("url")].toString());
+        item.title = obj[QStringLiteral("title")].toString();
+        item.artist = obj[QStringLiteral("artist")].toString();
+        item.album = obj[QStringLiteral("album")].toString();
+        item.duration = obj[QStringLiteral("duration")].toInteger();
+        m_items.append(item);
+    }
+    m_currentIndex = root[QStringLiteral("currentIndex")].toInt(-1);
+    m_playbackMode = root[QStringLiteral("playbackMode")].toInt(0);
+    emit playlistChanged();
+    return true;
 }
 
 PlaylistManager::~PlaylistManager() = default;

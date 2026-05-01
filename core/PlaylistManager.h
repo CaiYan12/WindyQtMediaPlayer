@@ -42,6 +42,9 @@ public:
     QUrl currentUrl() const;
     int playbackMode() const;
 
+    void save(const QString& path);
+    bool load(const QString& path);
+
 signals:
     void currentIndexChanged(int index);
     void playlistChanged();

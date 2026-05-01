@@ -17,6 +17,8 @@
 #include <QCloseEvent>
 #include <QTime>
 #include <QDir>
+#include <QStandardPaths>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -29,7 +31,18 @@ MainWindow::MainWindow(QWidget* parent)
     setupTray();
     setupConnections();
     loadStyleSheet();
+
+    // Playback history persistence
+    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir appDataDir(appDataPath);
+    if (!appDataDir.exists()) appDataDir.mkpath(appDataPath);
+    m_playlistPath = appDataPath + QStringLiteral("/playlist.json");
+    m_playlist->load(m_playlistPath);
     m_videoWidget->attachToEngine(m_engine);
+    if (m_playlist->currentIndex() >= 0 && m_playlist->itemCount() > 0) {
+        auto item = m_playlist->itemAt(m_playlist->currentIndex());
+        m_engine->load(item.url);
+    }
 
     setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
 }
@@ -124,14 +137,18 @@ void MainWindow::setupMenuBar()
     }
 
     auto* menuView = menuBar()->addMenu(QStringLiteral("\u89c6\u56fe(V)"));
-    menuView->addAction(QStringLiteral("\u5168\u5c4f"), this, &MainWindow::onToggleFullscreen);
-    menuView->actions().last()->setShortcut(Qt::Key_F11);
-    menuView->addAction(QStringLiteral("\u64ad\u653e\u5217\u8868"), this, &MainWindow::onTogglePlaylist);
-    menuView->actions().last()->setShortcut(Qt::CTRL | Qt::Key_L);
-    menuView->addAction(QStringLiteral("\u8ff7\u4f60\u6a21\u5f0f"), this, &MainWindow::onToggleMiniMode);
-    menuView->actions().last()->setShortcut(Qt::CTRL | Qt::Key_M);
+    m_actFullscreen = menuView->addAction(QStringLiteral("\u5168\u5c4f"), this, &MainWindow::onToggleFullscreen);
+    m_actFullscreen->setShortcut(Qt::Key_F11);
+    m_actPlaylist = menuView->addAction(QStringLiteral("\u64ad\u653e\u5217\u8868"), this, &MainWindow::onTogglePlaylist);
+    m_actPlaylist->setShortcut(Qt::CTRL | Qt::Key_L);
+    m_actPlaylist->setCheckable(true);
+    m_actPlaylist->setChecked(true);
+    m_actMiniMode = menuView->addAction(QStringLiteral("\u8ff7\u4f60\u6a21\u5f0f"), this, &MainWindow::onToggleMiniMode);
+    m_actMiniMode->setShortcut(Qt::CTRL | Qt::Key_M);
+    m_actMiniMode->setCheckable(true);
     menuView->addSeparator();
-    menuView->addAction(QStringLiteral("\u603b\u5728\u6700\u524d"), this, &MainWindow::onAlwaysOnTop);
+    m_actAlwaysOnTop = menuView->addAction(QStringLiteral("\u603b\u5728\u6700\u524d"), this, &MainWindow::onAlwaysOnTop);
+    m_actAlwaysOnTop->setCheckable(true);
 
     auto* menuHelp = menuBar()->addMenu(QStringLiteral("\u5e2e\u52a9(H)"));
     menuHelp->addAction(QStringLiteral("\u5173\u4e8e"), []() {
@@ -185,7 +202,8 @@ void MainWindow::loadStyleSheet()
 void MainWindow::onOpenFile()
 {
     QStringList files = QFileDialog::getOpenFileNames(this,
-        QStringLiteral("\u6253\u5f00\u5a92\u4f53\u6587\u4ef6"), QString(),
+        QStringLiteral("\u6253\u5f00\u5a92\u4f53\u6587\u4ef6"),
+        QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).first(),
         QStringLiteral("\u5a92\u4f53\u6587\u4ef6 (*.mp3 *.mp4 *.wav *.flac *.aac *.ogg *.m4a *.mkv *.avi *.wmv *.webm);;"
                       "\u97f3\u9891 (*.mp3 *.wav *.flac *.aac *.ogg *.m4a);;"
                       "\u89c6\u9891 (*.mp4 *.mkv *.avi *.wmv *.webm);;"
@@ -194,11 +212,20 @@ void MainWindow::onOpenFile()
     if (files.isEmpty()) return;
     for (const QString& f : files) {
         QUrl url = QUrl::fromLocalFile(QFileInfo(f).absoluteFilePath());
-        m_playlist->addItem(url, QFileInfo(f).fileName());
-    }
-    if (files.size() == 1) {
-        m_engine->load(QUrl::fromLocalFile(files.first()));
-        m_engine->play();
+        int existingIndex = -1;
+        for (int i = 0; i < m_playlist->itemCount(); ++i) {
+            if (m_playlist->itemAt(i).url == url) { existingIndex = i; break; }
+        }
+        if (existingIndex >= 0) {
+            m_playlist->playIndex(existingIndex);
+            m_engine->load(url);
+            m_engine->play();
+        } else {
+            m_playlist->addItem(url, QFileInfo(f).fileName());
+            m_playlist->playIndex(m_playlist->itemCount() - 1);
+            m_engine->load(url);
+            m_engine->play();
+        }
     }
 }
 
@@ -300,14 +327,15 @@ void MainWindow::onPlaylistPrevious()
 
 void MainWindow::onToggleFullscreen()
 {
-    if (isFullScreen()) showNormal();
-    else showFullScreen();
+    if (isFullScreen()) { showNormal(); m_actFullscreen->setChecked(false); }
+    else { showFullScreen(); m_actFullscreen->setChecked(true); }
 }
 
 void MainWindow::onTogglePlaylist()
 {
     m_playlistVisible = !m_playlistVisible;
     m_playlistWidget->setVisible(m_playlistVisible);
+    m_actPlaylist->setChecked(m_playlistVisible);
 }
 
 void MainWindow::onToggleMiniMode()
@@ -315,9 +343,11 @@ void MainWindow::onToggleMiniMode()
     if (m_miniMode) {
         resize(900, 600);
         m_miniMode = false;
+        m_actMiniMode->setChecked(false);
     } else {
         resize(400, 120);
         m_miniMode = true;
+        m_actMiniMode->setChecked(true);
     }
 }
 
@@ -425,6 +455,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         hide();
         event->ignore();
     } else {
+        m_playlist->save(m_playlistPath);
         event->accept();
     }
 }
