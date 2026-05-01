@@ -60,6 +60,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ui/PlaylistWidget.cpp
     ui/VideoWidget.cpp
     ui/SpectrumWidget.cpp
+    ui/EqWidget.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

@@ -11,6 +11,8 @@ PlaylistManager::PlaylistManager(QObject* parent)
 {
 }
 
+PlaylistManager::~PlaylistManager() = default;
+
 void PlaylistManager::save(const QString& path)
 {
     QJsonArray arr;
@@ -25,7 +27,7 @@ void PlaylistManager::save(const QString& path)
     }
     QJsonObject root;
     root[QStringLiteral("currentIndex")] = m_currentIndex;
-    root[QStringLiteral("playbackMode")] = m_playbackMode;
+    root[QStringLiteral("playbackMode")] = static_cast<int>(m_playbackMode);
     root[QStringLiteral("items")] = arr;
     QFile f(path);
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -55,12 +57,10 @@ bool PlaylistManager::load(const QString& path)
         m_items.append(item);
     }
     m_currentIndex = root[QStringLiteral("currentIndex")].toInt(-1);
-    m_playbackMode = root[QStringLiteral("playbackMode")].toInt(0);
+    m_playbackMode = static_cast<PlaybackMode>(root[QStringLiteral("playbackMode")].toInt(1));
     emit playlistChanged();
     return true;
 }
-
-PlaylistManager::~PlaylistManager() = default;
 
 void PlaylistManager::addItem(const QUrl& url, const QString& title)
 {
@@ -88,6 +88,7 @@ void PlaylistManager::removeItem(int index)
 {
     if (index < 0 || index >= m_items.size()) return;
     m_items.removeAt(index);
+    if (m_currentIndex >= m_items.size()) m_currentIndex = m_items.size() - 1;
     emit itemRemoved(index);
     emit playlistChanged();
 }
@@ -110,16 +111,26 @@ void PlaylistManager::playIndex(int index)
 void PlaylistManager::playNext()
 {
     if (m_items.isEmpty()) return;
-    if (m_playbackMode == 2) {
-        // Random
-        m_currentIndex = QRandomGenerator::global()->bounded(m_items.size());
-    } else if (m_playbackMode == 1) {
-        // Loop
-        m_currentIndex = (m_currentIndex + 1) % m_items.size();
-    } else {
-        // Sequential
-        if (m_currentIndex + 1 < m_items.size())
-            ++m_currentIndex;
+    const int count = m_items.size();
+
+    switch (m_playbackMode) {
+        case Random:
+            m_currentIndex = QRandomGenerator::global()->bounded(count);
+            break;
+        case Single:
+        case SingleLoop:
+            // For Single (stop-after-one), we just stay on current track;
+            // engine will call onEngineStopped() when done.
+            // For SingleLoop, re-same track.
+            m_currentIndex = (m_currentIndex + 1) % count;
+            break;
+        case Sequential:
+            if (m_currentIndex + 1 < count)
+                ++m_currentIndex;
+            break;
+        case ListLoop:
+            m_currentIndex = (m_currentIndex + 1) % count;
+            break;
     }
     emit currentIndexChanged(m_currentIndex);
 }
@@ -127,17 +138,68 @@ void PlaylistManager::playNext()
 void PlaylistManager::playPrevious()
 {
     if (m_items.isEmpty()) return;
-    if (m_playbackMode == 2) {
-        m_currentIndex = QRandomGenerator::global()->bounded(m_items.size());
-    } else if (m_currentIndex > 0) {
-        --m_currentIndex;
+    const int count = m_items.size();
+
+    switch (m_playbackMode) {
+        case Random:
+            m_currentIndex = QRandomGenerator::global()->bounded(count);
+            break;
+        case Single:
+        case SingleLoop:
+        case ListLoop:
+            if (m_currentIndex > 0)
+                --m_currentIndex;
+            else
+                m_currentIndex = count - 1;
+            break;
+        case Sequential:
+            if (m_currentIndex > 0)
+                --m_currentIndex;
+            break;
     }
     emit currentIndexChanged(m_currentIndex);
 }
 
-void PlaylistManager::setPlaybackMode(int mode)
+void PlaylistManager::onEngineStopped()
 {
-    m_playbackMode = mode;
+    // Called when playback reaches end of media.
+    if (m_items.isEmpty()) return;
+    const int count = m_items.size();
+
+    switch (m_playbackMode) {
+        case Single:
+            // Stop — don't advance, don't replay
+            m_currentIndex = -1;
+            break;
+        case SingleLoop:
+            // Replay current track
+            emit currentIndexChanged(m_currentIndex);
+            break;
+        case ListLoop:
+            m_currentIndex = (m_currentIndex + 1) % count;
+            emit currentIndexChanged(m_currentIndex);
+            break;
+        case Sequential:
+            if (m_currentIndex + 1 < count) {
+                ++m_currentIndex;
+                emit currentIndexChanged(m_currentIndex);
+            }
+            break;
+        case Random:
+            // In pure random, one-shot stop at end is common;
+            // but for continuous random, pick next.
+            m_currentIndex = QRandomGenerator::global()->bounded(count);
+            emit currentIndexChanged(m_currentIndex);
+            break;
+    }
+}
+
+void PlaylistManager::setPlaybackMode(PlaybackMode mode)
+{
+    if (m_playbackMode != mode) {
+        m_playbackMode = mode;
+        emit playlistChanged(); // so UI can update the checkmark
+    }
 }
 
 void PlaylistManager::setCurrentIndex(int index)
@@ -163,7 +225,22 @@ QUrl PlaylistManager::currentUrl() const
     return {};
 }
 
-int PlaylistManager::playbackMode() const { return m_playbackMode; }
+PlaylistManager::PlaybackMode PlaylistManager::playbackMode() const
+{
+    return m_playbackMode;
+}
+
+QString PlaylistManager::playbackModeName() const
+{
+    switch (m_playbackMode) {
+        case Single:      return QStringLiteral("单个播放");
+        case Sequential: return QStringLiteral("顺序播放");
+        case SingleLoop: return QStringLiteral("单曲循环");
+        case ListLoop:   return QStringLiteral("列表循环");
+        case Random:     return QStringLiteral("随机播放");
+    }
+    return QString();
+}
 
 void PlaylistManager::onCurrentIndexChanged(int index)
 {

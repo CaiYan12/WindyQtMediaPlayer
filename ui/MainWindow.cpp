@@ -1,12 +1,15 @@
 #include "MainWindow.h"
 #include "MediaEngine.h"
+#include "EqualizerManager.h"
 #include "PlaylistManager.h"
 #include "ControlBar.h"
 #include "PlaylistWidget.h"
 #include "VideoWidget.h"
 #include "SpectrumWidget.h"
+#include "EqWidget.h"
 
 #include <QMenuBar>
+#include <QActionGroup>
 #include <QStatusBar>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -23,6 +26,7 @@
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_engine(new MediaEngine(this))
+    , m_eq(new EqualizerManager(this))
     , m_playlist(new PlaylistManager(this))
     , m_seekTimer(new QTimer(this))
 {
@@ -37,14 +41,18 @@ MainWindow::MainWindow(QWidget* parent)
     QDir appDataDir(appDataPath);
     if (!appDataDir.exists()) appDataDir.mkpath(appDataPath);
     m_playlistPath = appDataPath + QStringLiteral("/playlist.json");
+
+    // Set base title BEFORE load — load() synchronously fires
+    // currentIndexChanged -> engine.load() -> metaDataChanged which
+    // would overwrite the title before we reach setWindowTitle below.
+    m_engineReady = true;
+    m_titleRestored = true;
+    setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+
     m_playlist->load(m_playlistPath);
     m_videoWidget->attachToEngine(m_engine);
-    if (m_playlist->currentIndex() >= 0 && m_playlist->itemCount() > 0) {
-        auto item = m_playlist->itemAt(m_playlist->currentIndex());
-        m_engine->load(item.url);
-    }
 
-    setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    // No auto-load on startup — title stays "媒体播放器" until user interaction.
 }
 
 MainWindow::~MainWindow() = default;
@@ -63,6 +71,7 @@ void MainWindow::setupUi()
     m_playlistWidget->setMaximumWidth(380);
 
     m_controlBar = new ControlBar(this);
+    m_controlBar->installEventFilter(this);
     connect(m_controlBar, &ControlBar::seekRequest, this, &MainWindow::onSeek);
     connect(m_controlBar, &ControlBar::playPauseClicked, this, &MainWindow::onPlayPause);
     connect(m_controlBar, &ControlBar::stopClicked, this, &MainWindow::onStop);
@@ -70,6 +79,7 @@ void MainWindow::setupUi()
     connect(m_controlBar, &ControlBar::muteClicked, this, &MainWindow::onMuteToggled);
     connect(m_controlBar, &ControlBar::prevClicked, this, &MainWindow::onPlaylistPrevious);
     connect(m_controlBar, &ControlBar::nextClicked, this, &MainWindow::onPlaylistNext);
+    connect(m_controlBar, &ControlBar::fullscreenClicked, this, &MainWindow::onFullscreen);
     connect(m_controlBar, &ControlBar::seeked, this, [this](qint64 ms) {
         m_engine->seek(ms);
         m_seeking = false;
@@ -136,6 +146,25 @@ void MainWindow::setupMenuBar()
         if (qFuzzyCompare(pair.second, 1.0)) a->setChecked(true);
     }
 
+    menuPlay->addSeparator();
+    menuPlay->addAction(QStringLiteral("EQ \u8c03节"), this, &MainWindow::onOpenEq);
+
+    m_modeMenu = menuPlay->addMenu(QStringLiteral("\u64ad\u653e\u6a21\u5f0f"));
+    m_modeGroup = new QActionGroup(this);
+    QStringList modeNames = {
+        QStringLiteral("\u5355\u4e2a\u64ad\u653e"),
+        QStringLiteral("\u987a\u5e8f\u64ad\u653e"),
+        QStringLiteral("\u5355\u66f2\u5faa\u73af"),
+        QStringLiteral("\u5217\u8868\u5faa\u73af"),
+        QStringLiteral("\u968f\u673a\u64ad\u653e")
+    };
+    for (int i = 0; i < modeNames.size(); ++i) {
+        auto* a = m_modeMenu->addAction(modeNames[i], this, [this, i]() { onPlaybackModeChanged(i); });
+        a->setCheckable(true);
+        m_modeGroup->addAction(a);
+    }
+    m_modeGroup->actions().at(1)->setChecked(true);
+
     auto* menuView = menuBar()->addMenu(QStringLiteral("\u89c6\u56fe(V)"));
     m_actFullscreen = menuView->addAction(QStringLiteral("\u5168\u5c4f"), this, &MainWindow::onToggleFullscreen);
     m_actFullscreen->setShortcut(Qt::Key_F11);
@@ -179,6 +208,7 @@ void MainWindow::setupConnections()
             m_engine->play();
         }
     });
+    connect(m_engine, &MediaEngine::playbackEnded, m_playlist, &PlaylistManager::onEngineStopped);
 
     connect(m_playlistWidget, &PlaylistWidget::itemDoubleClicked, this, &MainWindow::onPlaylistItemDoubleClicked);
     connect(m_playlistWidget, &PlaylistWidget::nextRequested, this, &MainWindow::onPlaylistNext);
@@ -395,9 +425,25 @@ void MainWindow::onDurationChanged(qint64 dur)
 
 void MainWindow::onMetaDataChanged()
 {
-    updateWindowTitle();
+    if (m_titleRestored) updateWindowTitle();
 }
 
+void MainWindow::onFullscreen()
+{
+    if (isFullScreen()) { showNormal(); m_actFullscreen->setChecked(false); }
+    else { showFullScreen(); m_actFullscreen->setChecked(true); }
+}
+
+void MainWindow::onOpenEq()
+{
+    EqWidget eq(m_eq, this);
+    eq.setWindowModality(Qt::ApplicationModal);
+    eq.exec();
+}
+void MainWindow::updateTimeLabel()
+{
+    // handled by ControlBar
+}
 void MainWindow::onEngineError(const QString& err)
 {
     QMessageBox::warning(this, QStringLiteral("\u64ad\u653e\u9519\u8bef"), err);
@@ -405,45 +451,23 @@ void MainWindow::onEngineError(const QString& err)
 
 void MainWindow::updateWindowTitle()
 {
-    QString title = m_engine->title();
-    if (title.isEmpty()) title = m_engine->currentFileName();
-    if (!title.isEmpty()) setWindowTitle(title + QStringLiteral(" \u2014 \u5a92\u4f53\u64ad\u653e\u5668"));
-    else setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
 }
 
 void MainWindow::updatePlayPauseButton()
 {
-    m_controlBar->setPlaying(m_engine->playbackState() == QMediaPlayer::PlayingState);
-}
-
-void MainWindow::updateTimeLabel()
-{
-    m_controlBar->setTimeLabels(formatTime(m_engine->position()), formatTime(m_engine->duration()));
-}
-
-QString MainWindow::formatTime(qint64 ms) const
-{
-    if (ms < 0) ms = 0;
-    QTime t(0, 0, 0);
-    t = t.addMSecs(ms);
-    if (ms >= 3600000)
-        return t.toString(QStringLiteral("h:mm:ss"));
-    return t.toString(QStringLiteral("mm:ss"));
+    // Play/pause button icon is managed by ControlBar internally
 }
 
 bool MainWindow::eventFilter(QObject* watched, QEvent* event)
 {
-    Q_UNUSED(watched);
     if (event->type() == QEvent::KeyPress) {
         auto* ke = static_cast<QKeyEvent*>(event);
-        switch (ke->key()) {
-            case Qt::Key_Space:    onPlayPause(); return true;
-            case Qt::Key_Escape:   if (isFullScreen()) { showNormal(); return true; } break;
-            case Qt::Key_F11:      onToggleFullscreen(); return true;
-            case Qt::Key_Left:     m_engine->seek(qMax(0LL, m_engine->position() - 10000)); return true;
-            case Qt::Key_Right:    m_engine->seek(qMin(m_engine->duration(), m_engine->position() + 10000)); return true;
-            case Qt::Key_Up:       onVolumeChanged(qMin(100, m_engine->volume() + 5)); return true;
-            case Qt::Key_Down:     onVolumeChanged(qMax(0, m_engine->volume() - 5)); return true;
+        if (ke->key() == Qt::Key_Escape && ke->modifiers() == Qt::NoModifier) {
+            if (isFullScreen()) {
+                showNormal();
+                return true;
+            }
         }
     }
     return QMainWindow::eventFilter(watched, event);
@@ -451,11 +475,11 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    if (m_tray && m_tray->isVisible()) {
-        hide();
-        event->ignore();
-    } else {
-        m_playlist->save(m_playlistPath);
-        event->accept();
-    }
+    m_playlist->save(m_playlistPath);
+    event->accept();
+}
+
+void MainWindow::onPlaybackModeChanged(int mode)
+{
+    m_playlist->setPlaybackMode(static_cast<PlaylistManager::PlaybackMode>(mode));
 }

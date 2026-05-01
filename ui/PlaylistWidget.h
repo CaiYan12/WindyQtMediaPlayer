@@ -2,6 +2,8 @@
 #include <QWidget>
 class PlaylistManager;
 class QTableWidget;
+class QToolButton;
+class QMenu;
 
 class PlaylistWidget : public QWidget
 {
@@ -17,8 +19,15 @@ signals:
 
 private slots:
     void onCurrentRowChanged(int row);
+    void onModeChanged(QAction* action);
+
+private:
+    void loadPlaylist();
+    void updateModeBtnText(int mode);
 
 private:
     PlaylistManager* m_playlist = nullptr;
     QTableWidget*   m_table = nullptr;
+    QToolButton*    m_modeBtn = nullptr;
+    QMenu*          m_modeMenu = nullptr;
 };

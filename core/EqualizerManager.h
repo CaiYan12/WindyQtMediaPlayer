@@ -12,6 +12,7 @@ public:
     bool isEnabled() const;
 
     void setPreamp(float db);
+    float preamp() const;
     void setBandGain(int band, float gain);
     float bandGain(int band) const;
 

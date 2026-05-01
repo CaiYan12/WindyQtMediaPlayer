@@ -58,6 +58,7 @@ signals:
     void metaDataChanged();
     void errorOccurred(const QString& errorString);
     void bufferProgressChanged(float progress);
+    void playbackEnded();
 
 private slots:
     void onPlayerStateChanged(QMediaPlayer::PlaybackState state);
@@ -70,4 +71,5 @@ private:
     QMediaPlayer* m_player = nullptr;
     QAudioOutput* m_audioOutput = nullptr;
     qint64        m_duration = 0;
+    bool          m_userStopped = false;
 };

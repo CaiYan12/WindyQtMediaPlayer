@@ -28,6 +28,7 @@ signals:
     void muteClicked();
     void prevClicked();
     void nextClicked();
+    void fullscreenClicked();
 
 private:
     void setupUi();

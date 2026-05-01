@@ -78,6 +78,8 @@ void ControlBar::setupUi()
     m_fullscreenBtn->setFixedSize(30, 30);
     m_fullscreenBtn->setFont(btnFont);
 
+    connect(m_fullscreenBtn, &QPushButton::clicked, this, &ControlBar::fullscreenClicked);
+
     // Layout: seek row
     auto* seekRow = new QHBoxLayout;
     seekRow->setContentsMargins(12, 0, 12, 0);

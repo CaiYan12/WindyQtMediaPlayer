@@ -6,6 +6,7 @@ MediaEngine::MediaEngine(QObject* parent)
     : QObject(parent)
     , m_player(new QMediaPlayer(this))
     , m_audioOutput(new QAudioOutput(this))
+    , m_userStopped(false)
 {
     m_player->setAudioOutput(m_audioOutput);
     initConnections();
@@ -41,6 +42,9 @@ void MediaEngine::initConnections()
 void MediaEngine::onPlayerStateChanged(QMediaPlayer::PlaybackState state)
 {
     emit playbackStateChanged(state);
+    // Detect natural end-of-media stop (vs user-initiated stop)
+    if (state == QMediaPlayer::StoppedState && !m_userStopped)
+        emit playbackEnded();
 }
 
 void MediaEngine::onVolumeChanged(float volume)
@@ -55,9 +59,9 @@ void MediaEngine::onPlayerError(QMediaPlayer::Error error)
         case QMediaPlayer::NoError:            msg = QString(); break;
         case QMediaPlayer::ResourceError:      msg = QStringLiteral("\u8d44\u6e90\u52a0\u8f7d\u5931\u8d25"); break;
         case QMediaPlayer::FormatError:         msg = QStringLiteral("\u4e0d\u652f\u6301\u7684\u5a92\u4f53\u683c\u5f0f"); break;
-        case QMediaPlayer::NetworkError:         msg = QStringLiteral("\u7f51\u7edc\u9519\u8bef"); break;
+        case QMediaPlayer::NetworkError:        msg = QStringLiteral("\u7f51\u7edc\u9519\u8bef"); break;
         case QMediaPlayer::AccessDeniedError:   msg = QStringLiteral("\u8bbf\u95ee\u88ab\u62d2\u7edd"); break;
-        default:                                msg = QStringLiteral("\u672a\u77e5\u9519\u8bef"); break;
+        default:                               msg = QStringLiteral("\u672a\u77e5\u9519\u8bef"); break;
     }
     if (!msg.isEmpty()) {
         qWarning() << "[MediaEngine]" << msg;
@@ -67,17 +71,13 @@ void MediaEngine::onPlayerError(QMediaPlayer::Error error)
 
 void MediaEngine::load(const QUrl& url)
 {
+    m_userStopped = false;
     m_player->setSource(url);
 }
 
 void MediaEngine::load(const QString& path)
 {
-    QFileInfo fi(path);
-    if (fi.exists()) {
-        m_player->setSource(QUrl::fromLocalFile(fi.absoluteFilePath()));
-    } else {
-        m_player->setSource(QUrl(path));
-    }
+    load(QUrl::fromLocalFile(path));
 }
 
 void MediaEngine::play()
@@ -92,6 +92,7 @@ void MediaEngine::pause()
 
 void MediaEngine::stop()
 {
+    m_userStopped = true;
     m_player->stop();
 }
 
@@ -152,13 +153,16 @@ QUrl MediaEngine::currentUrl() const
 
 QString MediaEngine::currentFileName() const
 {
-    return QFileInfo(m_player->source().toString()).fileName();
+    QUrl url = currentUrl();
+    if (url.isLocalFile())
+        return QFileInfo(url.toLocalFile()).fileName();
+    return url.fileName();
 }
 
 QString MediaEngine::currentFilePath() const
 {
-    const QString p = m_player->source().toLocalFile();
-    return p.isEmpty() ? m_player->source().toString() : p;
+    QUrl url = currentUrl();
+    return url.isLocalFile() ? url.toLocalFile() : QString();
 }
 
 QString MediaEngine::title() const
@@ -178,10 +182,10 @@ QString MediaEngine::album() const
 
 QPixmap MediaEngine::coverArt() const
 {
-    QVariant art = m_player->metaData().value(QMediaMetaData::CoverArtImage);
-    if (art.canConvert<QPixmap>()) return art.value<QPixmap>();
-    if (art.canConvert<QImage>()) return QPixmap::fromImage(art.value<QImage>());
-    return {};
+    QVariant cover = m_player->metaData().value(QMediaMetaData::CoverArtImage);
+    if (cover.canConvert<QPixmap>())
+        return cover.value<QPixmap>();
+    return QPixmap();
 }
 
 bool MediaEngine::isSeekable() const
