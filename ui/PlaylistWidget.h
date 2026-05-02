@@ -11,6 +11,7 @@ class PlaylistWidget : public QWidget
 public:
     explicit PlaylistWidget(PlaylistManager* playlist, QWidget* parent = nullptr);
     ~PlaylistWidget() override;
+    void updateModeBtnText(int mode);
 
 signals:
     void itemDoubleClicked(int index);
@@ -23,7 +24,6 @@ private slots:
 
 private:
     void loadPlaylist();
-    void updateModeBtnText(int mode);
 
 private:
     PlaylistManager* m_playlist = nullptr;

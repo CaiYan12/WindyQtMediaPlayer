@@ -163,7 +163,7 @@ void MainWindow::setupMenuBar()
         a->setCheckable(true);
         m_modeGroup->addAction(a);
     }
-    m_modeGroup->actions().at(1)->setChecked(true);
+    // NOTE: do NOT setChecked here — playlist load already synced in setupConnections()
 
     auto* menuView = menuBar()->addMenu(QStringLiteral("\u89c6\u56fe(V)"));
     m_actFullscreen = menuView->addAction(QStringLiteral("\u5168\u5c4f"), this, &MainWindow::onToggleFullscreen);
@@ -213,6 +213,13 @@ void MainWindow::setupConnections()
     connect(m_playlistWidget, &PlaylistWidget::itemDoubleClicked, this, &MainWindow::onPlaylistItemDoubleClicked);
     connect(m_playlistWidget, &PlaylistWidget::nextRequested, this, &MainWindow::onPlaylistNext);
     connect(m_playlistWidget, &PlaylistWidget::prevRequested, this, &MainWindow::onPlaylistPrevious);
+
+    // Sync menu checkmark when mode is changed externally (e.g. playlist widget)
+    // Also sync immediately: playlist.load() ran before this, so signal already fired
+    connect(m_playlist, &PlaylistManager::playlistChanged, this, [this]() {
+        m_modeGroup->actions().at(m_playlist->playbackMode())->setChecked(true);
+    });
+    m_modeGroup->actions().at(m_playlist->playbackMode())->setChecked(true);
 
     m_controlBar->setVolume(m_engine->volume());
 }
@@ -451,7 +458,10 @@ void MainWindow::onEngineError(const QString& err)
 
 void MainWindow::updateWindowTitle()
 {
-    setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    QString title = m_engine->title();
+    if (title.isEmpty()) title = m_engine->currentFileName();
+    if (!title.isEmpty()) setWindowTitle(title + QStringLiteral(" \u2014 \u5a92\u4f53\u64ad\u653e\u5668"));
+    else setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
 }
 
 void MainWindow::updatePlayPauseButton()
@@ -482,4 +492,5 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::onPlaybackModeChanged(int mode)
 {
     m_playlist->setPlaybackMode(static_cast<PlaylistManager::PlaybackMode>(mode));
+    m_playlistWidget->updateModeBtnText(mode);
 }
