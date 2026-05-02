@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
-    app.setOrganizationName(QStringLiteral("WindyMediaPlayer"));
+    app.setOrganizationName(QStringLiteral("WindyQtMediaPlayer"));
     app.setApplicationName(QStringLiteral(""));
     app.setApplicationVersion(QStringLiteral("1.0"));
 

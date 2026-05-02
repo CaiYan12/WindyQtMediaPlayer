@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget* parent)
     loadStyleSheet();
 
     // Playback history persistence
-    const QString appDataPath = QFile::decodeName(qgetenv("APPDATA")) + QStringLiteral("/WindyMediaPlayer");
+    const QString appDataPath = QFile::decodeName(qgetenv("APPDATA")) + QStringLiteral("/WindyQtMediaPlayerdiaPlayer");
     QDir(appDataPath).mkpath(appDataPath);
     m_playlistPath = appDataPath + QStringLiteral("/playlist.json");
     m_settingsPath = appDataPath + QStringLiteral("/settings.json");
@@ -47,13 +47,13 @@ MainWindow::MainWindow(QWidget* parent)
     // would overwrite the title before we reach setWindowTitle below.
     m_engineReady = true;
     m_titleRestored = true;
-    setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    setWindowTitle(QStringLiteral("WindyQt\u64ad\u653e\u5668"));
 
     m_playlist->load(m_playlistPath);
     m_playlistWidget->updateModeBtnText(m_playlist->playbackMode());
     m_videoWidget->attachToEngine(m_engine);
 
-    // No auto-load on startup — title stays "媒体播放器" until user interaction.
+    // No auto-load on startup — title stays "WindyQt播放器" until user interaction.
 }
 
 MainWindow::~MainWindow() = default;
@@ -182,15 +182,15 @@ void MainWindow::setupMenuBar()
 
     auto* menuHelp = menuBar()->addMenu(QStringLiteral("\u5e2e\u52a9(H)"));
     menuHelp->addAction(QStringLiteral("\u5173\u4e8e"), []() {
-        QMessageBox::about(nullptr, QStringLiteral("\u5173\u4e8e\u5a92\u4f53\u64ad\u653e\u5668"),
-            QStringLiteral("<b>\u5a92\u4f53\u64ad\u653e\u5668 v1.0</b><br>\u57fa\u4e8e Qt6 Multimedia \u6784\u5efa\uff0c\u652f\u6301 MP3/MP4/WAV \u7b49\u4e3b\u6d41\u683c\u5f0f\u3002"));
+        QMessageBox::about(nullptr, QStringLiteral("\u5173\u4e8eWindyQt\u64ad\u653e\u5668"),
+            QStringLiteral("<b>WindyQt\u64ad\u653e\u5668 v1.0</b><br>\u57fa\u4e8e Qt6 Multimedia \u6784\u5efa\uff0c\u652f\u6301 MP3/MP4/WAV \u7b49\u4e3b\u6d41\u683c\u5f0f\u3002"));
     });
 }
 
 void MainWindow::setupTray()
 {
     m_tray = new QSystemTrayIcon(this);
-    m_tray->setToolTip(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    m_tray->setToolTip(QStringLiteral("WindyQt\u64ad\u653e\u5668"));
     connect(m_tray, &QSystemTrayIcon::activated, this, &MainWindow::onTrayActivated);
 }
 
@@ -461,8 +461,8 @@ void MainWindow::updateWindowTitle()
 {
     QString title = m_engine->title();
     if (title.isEmpty()) title = m_engine->currentFileName();
-    if (!title.isEmpty()) setWindowTitle(title + QStringLiteral(" \u2014 \u5a92\u4f53\u64ad\u653e\u5668"));
-    else setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    if (!title.isEmpty()) setWindowTitle(title + QStringLiteral(" \u2014 WindyQt\u64ad\u653e\u5668"));
+    else setWindowTitle(QStringLiteral("WindyQt\u64ad\u653e\u5668"));
 }
 
 void MainWindow::updatePlayPauseButton()
