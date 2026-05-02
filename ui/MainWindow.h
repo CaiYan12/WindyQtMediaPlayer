@@ -93,6 +93,7 @@ private:
     bool                m_titleRestored = false;
     bool                m_engineReady = false;
     QString              m_playlistPath;
+    QString              m_settingsPath;
     QAction*             m_actFullscreen = nullptr;
     QAction*             m_actPlaylist = nullptr;
     QAction*             m_actMiniMode = nullptr;

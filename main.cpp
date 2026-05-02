@@ -9,9 +9,9 @@ int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
-    app.setApplicationName(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
+    app.setOrganizationName(QStringLiteral("WindyMediaPlayer"));
+    app.setApplicationName(QStringLiteral(""));
     app.setApplicationVersion(QStringLiteral("1.0"));
-    app.setOrganizationName(QStringLiteral("MediaPlayer"));
 
     app.setStyle(QStyleFactory::create(QStringLiteral("fusion")));
 

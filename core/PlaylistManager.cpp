@@ -58,6 +58,7 @@ bool PlaylistManager::load(const QString& path)
     }
     m_currentIndex = root[QStringLiteral("currentIndex")].toInt(-1);
     m_playbackMode = static_cast<PlaybackMode>(root[QStringLiteral("playbackMode")].toInt(1));
+    qDebug() << "[DEBUG load] playbackMode:" << m_playbackMode;
     emit playlistChanged();
     return true;
 }

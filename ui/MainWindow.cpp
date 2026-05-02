@@ -37,10 +37,10 @@ MainWindow::MainWindow(QWidget* parent)
     loadStyleSheet();
 
     // Playback history persistence
-    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir appDataDir(appDataPath);
-    if (!appDataDir.exists()) appDataDir.mkpath(appDataPath);
+    const QString appDataPath = QFile::decodeName(qgetenv("APPDATA")) + QStringLiteral("/WindyMediaPlayer");
+    QDir(appDataPath).mkpath(appDataPath);
     m_playlistPath = appDataPath + QStringLiteral("/playlist.json");
+    m_settingsPath = appDataPath + QStringLiteral("/settings.json");
 
     // Set base title BEFORE load — load() synchronously fires
     // currentIndexChanged -> engine.load() -> metaDataChanged which
@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle(QStringLiteral("\u5a92\u4f53\u64ad\u653e\u5668"));
 
     m_playlist->load(m_playlistPath);
+    m_playlistWidget->updateModeBtnText(m_playlist->playbackMode());
     m_videoWidget->attachToEngine(m_engine);
 
     // No auto-load on startup — title stays "媒体播放器" until user interaction.
@@ -485,12 +486,14 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    qDebug() << "[DEBUG closeEvent] playbackMode:" << m_playlist->playbackMode() << "path:" << m_playlistPath;
     m_playlist->save(m_playlistPath);
     event->accept();
 }
 
 void MainWindow::onPlaybackModeChanged(int mode)
 {
+    qDebug() << "[DEBUG onPlaybackModeChanged] mode:" << mode;
     m_playlist->setPlaybackMode(static_cast<PlaylistManager::PlaybackMode>(mode));
     m_playlistWidget->updateModeBtnText(mode);
 }
