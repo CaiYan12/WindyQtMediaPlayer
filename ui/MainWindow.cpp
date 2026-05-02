@@ -423,6 +423,8 @@ void MainWindow::onPositionChanged(qint64 pos)
     if (!m_seeking) {
         m_controlBar->setPosition(pos);
         updateTimeLabel();
+    } else {
+        updateTimeLabel();
     }
 }
 
@@ -448,9 +450,22 @@ void MainWindow::onOpenEq()
     eq.setWindowModality(Qt::ApplicationModal);
     eq.exec();
 }
+QString MainWindow::formatTime(qint64 ms) const
+{
+    if (ms <= 0) return QStringLiteral("00:00");
+    const qint64 totalSec = ms / 1000;
+    const qint64 h = totalSec / 3600;
+    const qint64 m = (totalSec % 3600) / 60;
+    const qint64 s = totalSec % 60;
+    if (h > 0) return QString::asprintf("%02lld:%02lld:%02lld", h, m, s);
+    return QString::asprintf("%02lld:%02lld", m, s);
+}
+
 void MainWindow::updateTimeLabel()
 {
-    // handled by ControlBar
+    const qint64 pos = m_engine->position();
+    const qint64 dur = m_engine->duration();
+    m_controlBar->setTimeLabels(formatTime(pos), formatTime(dur));
 }
 void MainWindow::onEngineError(const QString& err)
 {
