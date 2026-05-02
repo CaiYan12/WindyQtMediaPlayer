@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget* parent)
     loadStyleSheet();
 
     // Playback history persistence
-    const QString appDataPath = QFile::decodeName(qgetenv("APPDATA")) + QStringLiteral("/WindyQtMediaPlayerdiaPlayer");
+    const QString appDataPath = QFile::decodeName(qgetenv("APPDATA")) + QStringLiteral("/WindyQtMediaPlayer");
     QDir(appDataPath).mkpath(appDataPath);
     m_playlistPath = appDataPath + QStringLiteral("/playlist.json");
     m_settingsPath = appDataPath + QStringLiteral("/settings.json");
