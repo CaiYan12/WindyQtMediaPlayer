@@ -2,8 +2,8 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Qt MSVC Debug",
-      "type": "cppvsdbg",
+      "name": "🐞 Debug (GDB)",
+      "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/MediaPlayer.exe",
       "args": [],
@@ -11,38 +11,17 @@
       "cwd": "${workspaceFolder}/build",
       "environment": [
         {
-          "name": "QT_PLUGIN_PATH",
-          "value": "C:/Qt/6.10.0/msvc2022_64/plugins"
-        },
-        {
-          "name": "QT_QPA_PLATFORM",
-          "value": "windows"
+          "name": "PATH",
+          "value": "C:\\Qt\\6.8.3\\mingw_64\\bin;C:\\Qt\\Tools\\mingw1310_64\\bin;${env:PATH}"
         }
       ],
-      "visualizerFile": "${workspaceFolder}/.vscode/MediaPlayer.natvis",
-      "symbolSearchPath": "C:/Qt/6.10.0/msvc2022_64/lib",
-      "sourceFileMap": {
-        "C:/Qt/6.10.0/Src": "C:/Qt/6.10.0/Src"
-      }
-    },
-    {
-      "name": "Qt MSVC Release",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/build/MediaPlayer.exe",
-      "args": [],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/build",
-      "environment": [
-        {
-          "name": "QT_PLUGIN_PATH",
-          "value": "C:/Qt/6.10.0/msvc2022_64/plugins"
-        },
-        {
-          "name": "QT_QPA_PLATFORM",
-          "value": "windows"
-        }
-      ]
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:\\Qt\\Tools\\mingw1310_64\\bin\\gdb.exe",
+      "setupCommands": [
+        { "text": "-enable-pretty-printing", "ignoreFailures": true }
+      ],
+      "preLaunchTask": "🔨 Build & Run"
     }
   ]
 }
